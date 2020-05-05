@@ -21,4 +21,32 @@ def box_above(state):
 	else :
 		# print (False)
 		return False
+
+
+
+
+# we can do class stuff - but is it worth it? since like 3 concepts --- 
+
+
+# class Logic:
+# 	def __init__(self, name="box_above"):
+# 		self.name = name
+
+# 	def run(self, state):
+# 		pass
+
+
+
+
+
+# class Box_Above(Logic):
+# 	def run(self, state):
+
 	
+
+
+
+# def sample(a):
+# 	print (a*2)
+
+# eval("sample")(2)
