@@ -142,7 +142,7 @@ def sample_states(env, eps, iters, randomStart=False, render=True, traceheatMap=
 					logger[concept][AC_NEGIDX]+=1
 					# save for neg
 					# select only 10% of these...
-					if random.random() > (logger[concept][POSIDX]*50 / (logger[concept][NEGIDX] + 0.000001)) : 
+					if random.random() > (logger[concept][POSIDX]*3 / (logger[concept][NEGIDX] + 0.000001)) : 
 						continue
 
 					path = ROOT+"/"+concept+"/neg"
