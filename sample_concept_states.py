@@ -25,6 +25,8 @@ import pprint
 
 
 
+ROOT = "runs-flip"
+
 #from scipy.misc import imresize # preserves single-pixel info _unlike_ img = img[::2,::2]
 # 
 # --- Find all concepts
@@ -32,7 +34,7 @@ allConceptsFuncs = utils.findAllConcepts()
 
 # resfunc = getattr(logics, 'concept_box_below')
 
-utils.createDirs(allConceptsFuncs,ROOT="runs")
+utils.createDirs(allConceptsFuncs,ROOT=ROOT)
 
 
 ACTION_LOOKUP = {
@@ -86,8 +88,11 @@ def randomStartAgent(env, STEP_LIMIT=20):
 
 
 
-def sample_states(env, eps, iters, randomStart=False):
+def sample_states(env, eps, iters, randomStart=False, render=True, traceheatMap=True):
 	logger = {}
+	playerMask, boxMask = logics.getMask(env.room_state)
+
+
 	# idx 0 is pos, idx 1 is neg, idx 2 is ACTUTAL_NEG
 	POSIDX = 0
 	NEGIDX = 1
@@ -97,29 +102,36 @@ def sample_states(env, eps, iters, randomStart=False):
 
 	for ep in range(eps):
 
-		print ("ep",ep, "Count pos/neg/actualneg")
+		env.reset()
+
+		print ("ep[",ep,"/",eps,"]", "  Count pos/neg/actualneg")
 		pprint.pprint(logger)
 
+		utils.saveMasks(playerMask, boxMask, ROOT, ep)
 
 		if randomStart :
 			env = randomStartAgent(env, STEP_LIMIT=20)
 
 		for i in range(iters):
 			action = random.randint(0,8) 
-
 			
 			done = True
 			env.step(action)
+
+
+			if render : 
+				env.render()
 			img = env.render(mode="rgb_array")
 
 			state = env.room_state
+			playerMask, boxMask = logics.updateMask(state, playerMask, boxMask)
 
 
 			for concept in allConceptsFuncs :
 				func = getattr(logics, concept)
 
 				if (func(state)):
-					path = "runs/"+concept+"/pos"
+					path = ROOT+"/"+concept+"/pos"
 					path += "/"+ str(logger[concept][POSIDX])+".png"
 					# save for pos
 
@@ -130,10 +142,10 @@ def sample_states(env, eps, iters, randomStart=False):
 					logger[concept][AC_NEGIDX]+=1
 					# save for neg
 					# select only 10% of these...
-					if random.random() > 0.1 : 
+					if random.random() > (logger[concept][POSIDX]*50 / (logger[concept][NEGIDX] + 0.000001)) : 
 						continue
 
-					path = "runs/"+concept+"/neg"
+					path = ROOT+"/"+concept+"/neg"
 					path += "/"+ str(logger[concept][NEGIDX])+".png"
 
 					utils.save_img(img, path)
@@ -141,7 +153,7 @@ def sample_states(env, eps, iters, randomStart=False):
 
 
 
-sample_states(env, eps=100, iters=100, randomStart=False)
+sample_states(env, eps=1000, iters=120, randomStart=False)
 
 
 
