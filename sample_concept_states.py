@@ -14,16 +14,25 @@ import gym_sokoban_mod
 
 from constt import *
 
-#from scipy.misc import imresize # preserves single-pixel info _unlike_ img = img[::2,::2]
 
-
+import utils
+import logics
 
 import os
-dirsCreate = ["runs", "runs/"+CONCEPT_NAME, "runs/"+CONCEPT_NAME+"/pos", "runs/"+CONCEPT_NAME+"/neg"]
-for dirName in dirsCreate :
-	if not os.path.exists(dirName):
-		os.mkdir(dirName)
-		print("Directory " , dirName ,  " Created ")
+
+import pprint 
+
+
+
+
+#from scipy.misc import imresize # preserves single-pixel info _unlike_ img = img[::2,::2]
+# 
+# --- Find all concepts
+allConceptsFuncs = utils.findAllConcepts()
+
+# resfunc = getattr(logics, 'concept_box_below')
+
+utils.createDirs(allConceptsFuncs,ROOT="runs")
 
 
 ACTION_LOOKUP = {
@@ -54,24 +63,48 @@ random.seed(seed)
 # ------- CODE STARTS HERE -----
 
 
-import utils
-import logics
+
+
 
 
 
 # since neg are ALOT we can take only 10% of those....
 
 
-def sample_states(eps, iters):
-	pos = 0
-	neg = 0
-	ac_neg = 0 
+def randomStartAgent(env, STEP_LIMIT=20):
+	# 
+
+	steps = random.randint(0, STEP_LIMIT)
+	# read the prioritydqn agent for this map & run according to its policy 
+	for step in steps :
+		# state = env.room_state
+		state = env.render(mode="rgb_array")
+		action = RLAgentPolicy(state)
+		env.step(action)
+
+	return env  
+
+
+
+def sample_states(env, eps, iters, randomStart=False):
+	logger = {}
+	# idx 0 is pos, idx 1 is neg, idx 2 is ACTUTAL_NEG
+	POSIDX = 0
+	NEGIDX = 1
+	AC_NEGIDX = 2
+	for concept in allConceptsFuncs : 
+		logger[concept] = [0,0,0]
 
 	for ep in range(eps):
-		for i in range(iters):
-			print ("ep",ep,"iteration", i, "Count pos -- neg/actualneg", pos,"--", neg,"/", ac_neg)
 
-			
+		print ("ep",ep, "Count pos/neg/actualneg")
+		pprint.pprint(logger)
+
+
+		if randomStart :
+			env = randomStartAgent(env, STEP_LIMIT=20)
+
+		for i in range(iters):
 			action = random.randint(0,8) 
 
 			
@@ -79,31 +112,37 @@ def sample_states(eps, iters):
 			env.step(action)
 			img = env.render(mode="rgb_array")
 
-
-			if (logics.box_above(env.room_state)):
-				path = "runs/"+CONCEPT_NAME+"/pos"
-				path += "/"+ str(pos)+".png"
-				# save for pos
-
-				utils.save_img(img, path)
-				pos += 1
-
-			else :
-				ac_neg+=1
-				# save for neg
-				# select only 10% of these...
-				if random.random() > 0.1 : 
-					continue
-
-				path = "runs/"+CONCEPT_NAME+"/neg"
-				path += "/"+ str(neg)+".png"
-
-				utils.save_img(img, path)
-				neg += 1
+			state = env.room_state
 
 
+			for concept in allConceptsFuncs :
+				func = getattr(logics, concept)
 
-sample_states(eps=100, iters=100)
+				if (func(state)):
+					path = "runs/"+concept+"/pos"
+					path += "/"+ str(logger[concept][POSIDX])+".png"
+					# save for pos
+
+					utils.save_img(img, path)
+					logger[concept][POSIDX] += 1
+
+				else :
+					logger[concept][AC_NEGIDX]+=1
+					# save for neg
+					# select only 10% of these...
+					if random.random() > 0.1 : 
+						continue
+
+					path = "runs/"+concept+"/neg"
+					path += "/"+ str(logger[concept][NEGIDX])+".png"
+
+					utils.save_img(img, path)
+					logger[concept][NEGIDX] += 1
+
+
+
+sample_states(env, eps=100, iters=100, randomStart=False)
+
 
 
 

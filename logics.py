@@ -1,7 +1,14 @@
 import numpy as np
 
+import os
 
-def box_above(state):
+# you can define a new concept function -- just remember to name is as concept_*
+
+
+# x increases to right 
+# y increases to down 
+
+def concept_box_above(state):
 	# assumes room state
 
 	# returns true if box is above...
@@ -16,13 +23,34 @@ def box_above(state):
 	by,bx = box_idx
 
 	if (bx == px) and (by+1 == py) :
-		# print (True)
 		return True
 	else :
-		# print (False)
 		return False
 
 
+
+def concept_box_below(state):
+	# assumes room state
+
+	player_idx = np.argwhere(state == 5)[0]
+	box_idx = np.argwhere(state == 4)[0]
+
+	py,px = player_idx
+	by,bx = box_idx
+
+	if (bx == px) and (by-1 == py) :
+		return True
+	else :
+		return False
+
+
+# def concept_box_left(state):
+# 	print ("working")
+# 	return True
+
+# def concept_box_right(state):
+# 	print ("working")
+# 	return True
 
 
 # we can do class stuff - but is it worth it? since like 3 concepts --- 
