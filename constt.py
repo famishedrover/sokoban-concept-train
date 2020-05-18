@@ -2,7 +2,7 @@
 CONCEPT_NAME = "concept_box_above"
 seed = 20
 
-ROOT = "runs-flip"
+ROOT = "runs-power-flip-cost"
 EPOCHS = 40
 
 

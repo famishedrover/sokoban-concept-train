@@ -11,6 +11,7 @@ import torch.autograd as autograd
 import torch.optim as optim
 
 import gym_sokoban_mod
+# import gym_sokoban_flip_mod 
 
 from constt import *
 
@@ -25,7 +26,7 @@ import pprint
 
 
 
-ROOT = "runs-flip"
+# ROOT = "runs-flip"
 
 #from scipy.misc import imresize # preserves single-pixel info _unlike_ img = img[::2,::2]
 # 
@@ -52,6 +53,7 @@ ACTION_LOOKUP = {
 
 
 env_name = 'Sokoban-mod-v0'
+# env_name = 'Sokoban-mod-flip-v0'
 env = gym.make(env_name) ; 
 
 
@@ -114,10 +116,9 @@ def sample_states(env, eps, iters, randomStart=False, render=True, traceheatMap=
 
 		for i in range(iters):
 			action = random.randint(0,8) 
-			
-			done = True
-			env.step(action)
 
+			# action = int(input())
+			next_, reward, done, _ = env.step(action)
 
 			if render : 
 				env.render()
@@ -151,6 +152,8 @@ def sample_states(env, eps, iters, randomStart=False, render=True, traceheatMap=
 					utils.save_img(img, path)
 					logger[concept][NEGIDX] += 1
 
+			if done : 
+				break
 
 
 sample_states(env, eps=1000, iters=120, randomStart=False)
